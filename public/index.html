@@ -1,13 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
+
+
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<!--<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">-->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap" rel="stylesheet">
+	
+
     <script src="scripts/jquery-3.5.1.min.js"></script>
     <script src="scripts/jquery.transit.min.js"></script>
     <script src="scripts/jquery-cookie-1.4.1.min.js"></script>
     <script src="scripts/showdown.min.js"></script>
     <link rel="stylesheet" type="text/css" href="style.css">
     <link rel="stylesheet" href="css/bg_load.css">
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
 
     <script type=module>
         //To DO:: 
@@ -27,6 +37,7 @@
         import {encode, decode} from "../scripts/gpt-2-3-tokenizer/mod.js";
         $(document).ready(function(){
             const VERSION = '1.2.8';
+            var is_mobile = false;
             var converter = new showdown.Converter();
             var bg_menu_toggle = false;
             var default_user_name = "You";
@@ -138,6 +149,31 @@
             var css_send_form_display = $('<div id=send_form></div>').css('display');
             
             var colab_ini_step = 1;
+			
+			// VARIABLES DONE NOW THE REAL CODE 
+			//
+			//
+			//
+			
+			// Dealing with Textarea Height
+			
+			//function textAreaAdjust(element) {
+			//	element.style.height = "1px";
+			//	element.style.height = (25+element.scrollHeight)+"px";
+			//}	
+			//function calcHeight(value) {
+			//	let numberOfLineBreaks = (value.match(/\n/g) || []).length;
+			//	// min-height + lines x line-height + padding + border
+			//	let newHeight = 25 + numberOfLineBreaks * 25 + 6 + 1;
+			//	return newHeight;
+			//}
+			//let textarea = document.querySelector(".resize-ta");
+			//textarea.addEventListener("keyup", () => {
+			//textarea.style.height = calcHeight(textarea.value) + "px";
+			//});
+			
+            
+
             setInterval(function() {
                 switch(colab_ini_step){
                     case 0:
@@ -159,12 +195,13 @@
                 }
             }, 500);
             /////////////
-            
+			
+            checkMobile();
 			var token;
 			 $.ajaxPrefilter((options, originalOptions, xhr) => {
 				xhr.setRequestHeader("X-CSRF-Token", token);
 			});
-			
+
 			$.get("/csrf-token")
 				.then(data => {
 					token = data.token;
@@ -176,10 +213,6 @@
 					getBackgrounds();
 					getUserAvatars();
 				});
-			
-            $('#characloud_url').click(function(){
-                window.open('https://boosty.to/tavernai', '_blank');
-            });
             function checkOnlineStatus(){
                 //console.log(online_status);
                 if(online_status == 'no_connection'){
@@ -194,7 +227,7 @@
                     is_get_status_novel = false;
                 }else{
                     $("#online_status_indicator").css("background-color", "black");
-                    $("#online_status").css("opacity", 0.0);
+                    $("#online_status").css("display", "none");
                     $("#online_status_text").html("");
                     $("#online_status_indicator2").css("background-color", "green");
                     $("#online_status_text2").html(online_status);
@@ -290,6 +323,12 @@
                 }
             }
             
+            function checkMobile() {
+                if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|BB|PlayBook|IEMobile|Windows Phone|Kindle|Silk|Opera Mini/i.test(navigator.userAgent)) {
+                    is_mobile = true;
+                }
+            }
+
             function resultCheckStatus(){
                 is_api_button_press = false;  
                 checkOnlineStatus();
@@ -318,7 +357,7 @@
                     method: "POST",
                     headers: {
 						"Content-Type": "application/json",
-						"X-CSRF-Token": token
+						"X-CSRF-Token": token,
 					},
                     body: JSON.stringify({
                             "": ""
@@ -340,6 +379,7 @@
                     }
                     characters.sort((a,b) =>  a.create_date - b.create_date );
                     //characters.reverse();
+
                     if(this_chid != undefined) $("#avatar_url_pole").val(characters[this_chid].avatar);
                     printCharaters();
                     //console.log(propOwn.length);
@@ -354,7 +394,7 @@
                     method: "POST",
                     headers: {
 						"Content-Type": "application/json",
-						"X-CSRF-Token": token
+						"X-CSRF-Token": token,
 					},
                     body: JSON.stringify({
                             "": ""
@@ -381,7 +421,7 @@
                     method: "POST",
                     headers: {
 						"Content-Type": "application/json",
-						"X-CSRF-Token": token
+						"X-CSRF-Token": token,
 					},
                     body: JSON.stringify({
                             "": ""
@@ -394,7 +434,6 @@
                         $('#colab_shadow_popup').css('display', 'none');
                         is_colab = true;
                         let url = String(getData.colaburl).split("flare.com")[0] + "flare.com";
-                        url = String(url).split("loca.lt")[0] + "loca.lt";
                         $('#api_url_text').val(url);
                         setTimeout(function() {
                             $('#api_button').click();
@@ -451,7 +490,7 @@
                     method: "POST",
                     headers: {
 						"Content-Type": "application/json",
-						"X-CSRF-Token": token
+						"X-CSRF-Token": token,
 					},
                     body: JSON.stringify({
                             "bg": bg
@@ -585,7 +624,7 @@
                     if(type != 'regenerate'){
                         var textareaText = $("#send_textarea").val();
                         $("#send_textarea").val('');
-                        
+                        $("#send_textarea").css("height", "40px");
                     }else{
                         var textareaText = "";
                         if(chat[chat.length-1]['is_user']){//If last message from You
@@ -600,7 +639,7 @@
                     
                     //$("#send_textarea").blur();
                     $( "#send_but" ).css("display", "none");
-                    $( "#loading_mes" ).css("display", "block");
+                    $( "#loading_mes" ).css("display", "inline-block");
 
 
                     var storyString = "";
@@ -835,7 +874,7 @@
                                     is_add_personality = true;
                                     //chatString = chatString.substr(0,chatString.length-1);
                                     //anchorAndPersonality = "[Genre: roleplay chat][Tone: very long messages with descriptions]";
-                                    if((anchorTop != "" || charPersonality != "") && !is_pygmalion){
+                                    if(anchorTop != "" || charPersonality != ""){
                                         if(anchorTop != "") charPersonality+=' ';
                                         item+="["+charPersonality+anchorTop+']\n';
                                     }
@@ -1041,7 +1080,6 @@
                                     }
                                     if(getMessage.indexOf('<|endoftext|>') != -1){ 
                                         getMessage = getMessage.substr(0,getMessage.indexOf('<|endoftext|>'));
-
                                     }
                                     let this_mes_is_name = true;
                                     if(getMessage.indexOf(name2+":") === 0){
@@ -1061,7 +1099,7 @@
                                         getMessage = $.trim(getMessage);
                                         chat[chat.length-1]['mes'] = getMessage;
                                         addOneMessage(chat[chat.length-1]);
-                                        $( "#send_but" ).css("display", "block");
+                                        $( "#send_but" ).css("display", "inline");
                                         $( "#loading_mes" ).css("display", "none");
                                         saveChat();
                                     }else{
@@ -1069,7 +1107,7 @@
                                         Generate('force_name2');
                                     }
                                 }else{
-                                    $( "#send_but" ).css("display", "block");
+                                    $( "#send_but" ).css("display", "inline");
                                     $( "#loading_mes" ).css("display", "none");
                                 }
                             },
@@ -1077,7 +1115,7 @@
 
                                 $("#send_textarea").removeAttr('disabled');
                                 is_send_press = false;
-                                $( "#send_but" ).css("display", "block");
+                                $( "#send_but" ).css("display", "inline");
                                 $( "#loading_mes" ).css("display", "none");
                                 console.log(exception);
                                 console.log(jqXHR);
@@ -1192,7 +1230,7 @@
                 select_selected_character(this_chid);
             }
             $("#send_textarea").keypress(function (e) {
-                if(e.which === 13 && !e.shiftKey && is_send_press == false) {
+                if(e.which === 13 && !e.shiftKey && is_send_press == false && is_mobile == false) {
                     is_send_press = true;
                     e.preventDefault();
                     Generate();
@@ -1550,18 +1588,15 @@
                 switch(popup_type){
 
                 case 'char_not_selected':
-                    $("#dialogue_popup_ok").css("background-color", "#191b31CC");
                     $("#dialogue_popup_ok").text("Ok");
                     $("#dialogue_popup_cancel").css("display", "none");
                     break;
 
                 case 'new_chat':
 
-                    $("#dialogue_popup_ok").css("background-color", "#191b31CC");
                     $("#dialogue_popup_ok").text("Yes");
                     break;
                 default:
-                    $("#dialogue_popup_ok").css("background-color", "#791b31");
                     $("#dialogue_popup_ok").text("Delete");
                
                 }
@@ -2045,7 +2080,7 @@
                     method: "POST",
                     headers: {
 						"Content-Type": "application/json",
-						"X-CSRF-Token": token
+						"X-CSRF-Token": token,
 					},
                     body: JSON.stringify({
                             "": ""
@@ -2512,7 +2547,7 @@
                             if(mes.length > strlen){
                                 mes = '...'+mes.substring(mes.length - strlen);
                             }
-                            $('#select_chat_div').append('<div class="select_chat_block" file_name="'+data[key]['file_name']+'"><div class=avatar><img src="characters/'+characters[this_chid]['avatar']+'" style="width: 33px; height: 51px;"></div><div class="select_chat_block_filename">'+data[key]['file_name']+'</div><div class="select_chat_block_mes">'+mes+'</div></div>');
+                            $('#select_chat_div').append('<div class="select_chat_block" file_name="'+data[key]['file_name']+'"><div class=avatar><img src="characters/'+characters[this_chid]['avatar']+'" style="width: 33px; height: 33px;"></div><div class="select_chat_block_filename">'+data[key]['file_name']+'</div><div class="select_chat_block_mes">'+mes+'</div></div>');
                             if(characters[this_chid]['chat'] == data[key]['file_name'].replace('.jsonl', '')){
                                 //children().last()
                                 $('#select_chat_div').children(':nth-last-child(1)').attr('highlight', true);
@@ -2770,6 +2805,7 @@
             });
         });
     </script>
+
 <title>Tavern.AI</title>
 </head>
 <body>
@@ -2777,8 +2813,11 @@
     
     
     <!--<div style="cursor: pointer;opacity: 0.1;"><img src="img/donut.png" style="width: 25px;height: 25px;bottom: 2px;left: 2px;position: absolute; "><div style="position: absolute; bottom: 6px;left: 28px;"><h4 style="margin-bottom: 0px"><i>Donuts</i></h4></div></div>-->
-    <div id="bg1"></div>
-    <div id="bg2"></div>
+    <div id="bg2">
+        <a href="https://github.com/TavernAI/TavernAI" target="_blank">
+            <img src="img/logo.png" id="logo">
+        </a>
+    </div>
     
     <div id="shadow_popup">
         <div id="dialogue_popup">
@@ -2869,19 +2908,6 @@
             <!--<div style="margin-bottom:5px;">***</div><div>TRX: TCiBKCt6xEGrsjpgQA2jDXWJLyUh1KN2Sn</div><div>BTC: 1LASziomyYNkZ2zk8Sa4ZLTkvczBMrjyjP</div>-->
         </div>
     </div>
-    <div id="bg_menu">
-        <div id="logo_block"><div id="bg_menu_button"><img src="img/tri.png"></div><img src="img/logo.png" id="site_logo"></div>
-        <div id="bg_menu_content">
-            <form id="form_bg_download"  action="javascript:void(null);" method="post" enctype="multipart/form-data">
-                <label class="input-file">
-                <input type="file" id="add_bg_button" name="avatar" accept="image/png, image/jpeg, image/jpg, image/gif, image/bmp">
-                <span class="bg_example_but_load" ><img src='img/addbg3.png'></span>           
-   
-                </label>
-            </form>
-            
-        </div>  
-    </div>
     <input type="checkbox" id="nav-toggle" hidden>
 
     <nav class="nav">
@@ -2893,7 +2919,7 @@
         <div class="right_menu_button" id="rm_button_selected_ch"><h2></h2></div>
 
         <div id="rm_ch_create_block" class="right_menu">
-            <div id="rm_button_back" class="right_menu_button"><h2 style="color: rgb(188, 193, 200, 0.5);">&#8656;</h2></div>
+            <div id="rm_button_back" class="right_menu_button"><h2 style="color: rgba(186, 186, 186, 0.5);">&#8656;</h2></div>
             
             <form id="form_create"  action="javascript:void(null);" method="post" enctype="multipart/form-data">
                 
@@ -2945,7 +2971,7 @@
         <div id="rm_api_block" class="right_menu" >
             
             <h3 id="title_api">API</h3>
-            <select id="main_api" style="color:#fff;background-color:#13152c;" >
+            <select id="main_api">
                 <option value="kobold">KoboldAI</option>
                 <option value="novel">NovelAI</option>
             </select>
@@ -3052,7 +3078,7 @@
         </div>
         <div id="rm_charaters_block" class="right_menu">
             <div id="rm_button_create" class="right_menu_button"><h2>+</h2></div>
-            <div id="character_import_button" class="right_menu_button"><h2>+Import</h2></div>
+            <div id="character_import_button" class="right_menu_button"><h2>+ Import</h2></div>
             <div id="rm_print_charaters_block"></div>
         </div>
         <div id="rm_info_block" class="right_menu">
@@ -3065,38 +3091,53 @@
     </nav>
     <div id="sheld">
         <div id="chat"></div>
-        <div id="form_sheld">
-            
+        <div id="form_sheld">            
             <div id="dialogue_del_mes">
                 <div id="dialogue_del_mes_text"><h3></h3></div>
                 <div id="dialogue_del_mes_ok" class="menu_button">Delete</div>
                 <div id="dialogue_del_mes_cancel" class="menu_button">Cancel</div>
             </div>
             <form id="send_form">
+                <div id="online_status">
+                    <div id="online_status_indicator"></div>
+                    <div id="online_status_text">No connection...</div>
+                </div>
                 
                 <div id="options_button">
                     <div id="options">
                         <div class="options-content">
-                        <a id="option_start_new_chat"><img src="img/save_and_start_new_chat.png" width="20" height="20">Start new chat</a>
-                        <a id="option_select_chat"><img src="img/book6.png" width="20" height="20" style="opacity: 0.0;"><img src="img/book6.png" style="width: 21px;height: 21px;position: absolute;top: 59px;left: 15px; opacity: 0.5;">Select chats</a><!--<img src="img/book6.png" style="width: 21px;height: 21px;position: absolute;top: 14px;left: 16px; opacity: 0.5;">Select chat</a>-->
-                        
+                        <a class="opt" id="option_start_new_chat"><img src="img/save_and_start_new_chat.png" width="20" height="20">Start new chat</a>
+                        <a class="opt" id="option_select_chat"><img src="img/book6.png" width="20" height="20">Select chats</a><!--<img src="img/book6.png" style="width: 21px;height: 21px;position: absolute;top: 14px;left: 16px; opacity: 0.5;">Select chat</a>-->       
                         <hr>
-                        <a id="option_delete_mes"><img src="img/del_mes.png" width="20" height="20">Delete message</a>
-                        <a id="option_regenerate"><img src="img/regenerate.png" width="20" height="20">Regenerate</a>
+                        <a class="opt" id="option_delete_mes"><img src="img/del_mes.png" width="20" height="20">Delete message</a>
+                        <a class="opt" id="option_regenerate"><img src="img/regenerate.png" width="20" height="20">Regenerate</a>
                         </div>
                     </div>
                 </div>
+				<!-- <div contenteditable="true" id="send_textarea">Type a message...</div> -->
                 <textarea id="send_textarea" placeholder="Type a message..." name="text"></textarea>
-                <div id="send_but_sheld"><div id="loading_mes"></div><input id="send_but" type="button"></div>
+				
+<script type="text/javascript">
+    $('#send_textarea').on('input', function () {
+        this.style.height = '1rem';
+        this.style.height =
+            (this.scrollHeight) + 'px';
+    });
+</script>
+
+                <div id="send_but_sheld">
+					
+					<div id="loading_mes"></div>
+					
+					<input id="send_but" type="button">
+
+				</div>
+
             </form>
-            <div id="online_status">
+           <!--  <div id="online_status">
                 <div id="online_status_indicator"></div><div id="online_status_text">No connection...</div>
-            </div>
+            </div> -->
         </div>
     </div>
-   
-    
-
-    
 </body>
 </html>
