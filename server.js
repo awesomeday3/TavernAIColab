@@ -52,9 +52,11 @@ var api_key_novel;
 var is_colab = true;
 var charactersPath = 'public/characters/';
 var chatsPath = 'public/chats/';
+var settingsPath = 'public/settings.json';
 if (is_colab && process.env.googledrive == 2){
     charactersPath = '/content/drive/MyDrive/TavernAI/characters/';
     chatsPath = '/content/drive/MyDrive/TavernAI/chats/';
+    settingsPath = '/content/drive/MyDrive/TavernAI/settings.json';
 }
 const jsonParser = express.json({limit: '100mb'});
 const urlencodedParser = express.urlencoded({extended: true, limit: '100mb'});
@@ -477,7 +479,7 @@ async function charaWrite(img_url, data, target_img, response = undefined, mes =
     try {
         // Load the image in any format
         sharp.cache(false);
-        var image = await sharp(img_url).resize(400, 600).toFormat('png').toBuffer();// old 170 234
+        var image = await sharp(img_url).resize(400, 400).toFormat('png').toBuffer();// old 170 234
         // Convert the image to PNG format
         //const pngImage = image.toFormat('png');
 
@@ -653,7 +655,7 @@ app.post("/downloadbackground", urlencodedParser, function(request, response){
 app.post("/savesettings", jsonParser, function(request, response){
 
 
-    fs.writeFile('public/settings.json', JSON.stringify(request.body), 'utf8', function(err) {
+    fs.writeFile(settingsPath, JSON.stringify(request.body), 'utf8', function(err) {
         if(err) {
             response.send(err);
             return console.log(err);
@@ -670,7 +672,7 @@ app.post('/getsettings', jsonParser, (request, response) => { //Wintermute's cod
     const koboldai_setting_names = [];
     const novelai_settings = [];
     const novelai_setting_names = [];
-    const settings = fs.readFileSync('public/settings.json', 'utf8',  (err, data) => {
+    const settings = fs.readFileSync(settingsPath, 'utf8',  (err, data) => {
     if (err) return response.sendStatus(500);
 
         return data;
