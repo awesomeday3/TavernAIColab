@@ -1938,6 +1938,12 @@
                     Generate('regenerate');
                 }
             });
+            $( "#option_regenerate2" ).click(function() {
+                if(is_send_press == false){
+                    is_send_press = true;
+                    Generate('regenerate');
+                }
+            });			
             $( "#option_delete_mes" ).click(function() {
                 if(this_chid != undefined && !is_send_press){
                     $('#dialogue_del_mes').css('display','block');
@@ -1950,6 +1956,18 @@
                     });
                 }
             });
+            $( "#option_delete_mes2" ).click(function() {
+                if(this_chid != undefined && !is_send_press){
+                    $('#dialogue_del_mes').css('display','block');
+                    $('#send_form').css('display','none');
+                    $('.del_checkbox').each(function(){
+                        if($(this).parent().attr('mesid') != 0){
+                            $(this).css("display", "block");
+                            $(this).parent().children('.for_checkbox').css('display', 'none');
+                        }
+                    });
+                }
+            });			
             $( "#dialogue_del_mes_cancel" ).click(function() {
                 $('#dialogue_del_mes').css('display','none');
                 $('#send_form').css('display',css_send_form_display);
@@ -2814,8 +2832,8 @@
     
     <!--<div style="cursor: pointer;opacity: 0.1;"><img src="img/donut.png" style="width: 25px;height: 25px;bottom: 2px;left: 2px;position: absolute; "><div style="position: absolute; bottom: 6px;left: 28px;"><h4 style="margin-bottom: 0px"><i>Donuts</i></h4></div></div>-->
     <div id="bg2">
-        <a class="opt" id="option_regenerate"><img src="img/regenerate.png" height="25px" width="25px" id="regenerate1" style = "margin-top: 10px; margin-left: 10px; cursor: pointer; opacity: 0.6" >
-		<a class="opt" id="option_delete_mes"><img src="img/del_mes.png" height="25px" width="25px" id="delete_mes1" style = "cursor: pointer; opacity: 0.6">
+        <a class="opt" id="option_regenerate"><img src="img/regenerate.png" height="25px" width="25px" id="regenerate" style = "margin-top: 10px; margin-left: 10px; cursor: pointer; opacity: 0.6" >
+		<a class="opt" id="option_delete_mes"><img src="img/del_mes.png" height="25px" width="25px" id="delete_mes" style = "cursor: pointer; opacity: 0.6">
         </a>
 	</div>
 	
@@ -3095,8 +3113,8 @@
                         <a class="opt" id="option_start_new_chat"><img src="img/save_and_start_new_chat.png" width="20" height="20">Start new chat</a>
                         <a class="opt" id="option_select_chat"><img src="img/book6.png" width="20" height="20">Select chats</a><!--<img src="img/book6.png" style="width: 21px;height: 21px;position: absolute;top: 14px;left: 16px; opacity: 0.5;">Select chat</a>-->       
                         <hr>
-                        <a class="opt" id="option_delete_mes"><img src="img/del_mes.png" width="20" height="20">Delete message</a>
-                        <a class="opt" id="option_regenerate"><img src="img/regenerate.png" width="20" height="20">Regenerate</a>
+                        <a class="opt" id="option_delete_mes2"><img src="img/del_mes.png" width="20" height="20">Delete message</a>
+                        <a class="opt" id="option_regenerate2"><img src="img/regenerate.png" width="20" height="20">Regenerate</a>
                         </div>
                     </div>
                 </div>
