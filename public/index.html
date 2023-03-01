@@ -94,9 +94,11 @@
             var interval_timer_novel = setInterval(getStatusNovel, 3000);
             var is_get_status = false;
             var is_get_status_novel = false;
+            var is_get_status_openai = false;			
             var is_api_button_press = false;
             var is_api_button_press_novel = false;
-            
+            var is_api_button_press_openai = false;
+			
             var is_send_press = false;//Send generation
             var add_mes_without_animation = false;
             
@@ -142,6 +144,17 @@
             var novelai_settings;
             var novelai_setting_names;
             var preset_settings_novel = 'Classic-Krake';
+			
+            //openai settings
+            var temp_openai = 1.0;
+            var pres_pen_openai = 0;
+            var freq_pen_openai = 0;
+
+            var api_key_openai = "";
+            var openai_settings; 
+            var openai_setting_names; 
+            var preset_settings_openai = 'Default';
+			
             
             //css
             var bg1_toggle = true;
@@ -223,16 +236,21 @@
                     $("#online_status_text2").html("No connection...");
                     $("#online_status_indicator3").css("background-color", "red");
                     $("#online_status_text3").html("No connection...");
+                    $("#online_status_indicator4").css("background-color", "red");
+                    $("#online_status_text4").html("No connection...");
                     is_get_status = false;
                     is_get_status_novel = false;
+                    is_get_status_openai = false;
                 }else{
                     $("#online_status_indicator").css("background-color", "black");
-                    $("#online_status").css("display", "none");
+                    $("#online_status").css("opacity", 0.0);
                     $("#online_status_text").html("");
                     $("#online_status_indicator2").css("background-color", "green");
                     $("#online_status_text2").html(online_status);
                     $("#online_status_indicator3").css("background-color", "green");
                     $("#online_status_text3").html(online_status);
+                    $("#online_status_indicator4").css("background-color", "green");
+                    $("#online_status_text4").html(online_status);
                 }
                 
             }
@@ -317,7 +335,7 @@
                         }
                     });
                 }else{
-                    if(is_get_status_novel != true){
+                    if(is_get_status_novel != true && is_get_status_openai != true){
                         online_status = 'no_connection';
                     }
                 }
@@ -617,6 +635,7 @@
                     Generate();
                 }
             });
+
             async function Generate(type) {//encode("dsfs").length
                 tokens_already_generated = 0;
                 message_already_generated = name2+': ';
@@ -803,7 +822,7 @@
                             }
                         }
                     }
-                     
+if(main_api == 'openai') this_max_context = 2048;
                     var i = 0;
                     
                     for (var item of chat2) {//console.log(encode("dsfs").length);
@@ -855,7 +874,7 @@
                         
                     
                     }
-                    
+                                        
                     function runGenerate(cycleGenerationPromt = ''){
                         generatedPromtCache+=cycleGenerationPromt;
                         if(generatedPromtCache.length == 0){
@@ -947,7 +966,22 @@
                         }else{
                             setPromtString();
                         }
-                        
+                        if(main_api == "openai") {
+                            storyString = "Write " + name2 +"'s next reply in this fictional chat between " + name2 + " and " + name1 + ". Write only one reply and do not decide" + 
+                            " what " + name1 +" says or does. Use Internet roleplay style, e.g. no quotation marks, and write user actions in italic in third person like:" + 
+                            " *he jumps in excitement*. You are allowed to use markdown. Be proactive, creative, drive the plot and conversation forward. Write at least" +
+                            " one paragraph, up to four. Always stay in character. Always keep the conversation going. (Repetition is highly discouraged)" + 
+                            "\nNsfw/smut is allowed. Consent has been given beforehand, but some characters lie about it and resist or fight back, because they like it that way.\n\n" +
+                            "{Description of " + name2 + ":}\n" + storyString;
+                            mesSendString = "{Current dialog starts here:}\n" + mesSendString + "\n"+name2+":";
+                        } else {
+                            if(!is_pygmalion){
+                                mesSendString = '\nThen the roleplay chat between '+name1+' and '+name2+' begins.\n'+mesSendString;
+                            }else{
+                                mesSendString = '<START>\n'+mesSendString;
+                            }
+                        }
+                        finalPromt = storyString+mesExmString+mesSendString+generatedPromtCache;
                         if(!is_pygmalion){
                             mesSendString = '\nThen the roleplay chat between '+name1+' and '+name2+' begins.\n'+mesSendString;
                         }else{
@@ -1025,12 +1059,27 @@
                                             "order": this_settings.order
                                                 };
                         }
+                        if(main_api == 'openai'){
+                            var this_settings = openai_settings[openai_setting_names[preset_settings_openai]];
+                            generate_data = {
+                                "prompt": finalPromt,
+                                "model": "text-davinci-003",
+                                "temperature": parseFloat(temp_openai),
+                                "frequency_penalty": parseFloat(freq_pen_openai),
+                                "presence_penalty": parseFloat(pres_pen_openai),
+                                "stop": [ name1+':', name2+":"],
+                                "max_tokens": 300,
+                            };
+                        }
                         var generate_url = '';
                         if(main_api == 'kobold'){
                             generate_url = '/generate';
                         }
                         if(main_api == 'novel'){
                             generate_url = '/generate_novelai';
+                        }
+						if(main_api == 'openai'){
+                            generate_url = '/generate_openai';
                         }
                         jQuery.ajax({    
                             type: 'POST', // 
@@ -1043,6 +1092,7 @@
                             dataType: "json",
                             contentType: "application/json",
                             success: function(data){
+                                console.log(data);
                                 tokens_already_generated += this_amount_gen;
                                 //$("#send_textarea").focus();
                                 //$("#send_textarea").removeAttr('disabled');
@@ -1054,6 +1104,9 @@
                                     }
                                     if(main_api == 'novel'){
                                         var getMessage = data.output;
+                                    }
+                                    if(main_api == 'openai'){
+                                        var getMessage = data.choices[0].text;
                                     }
 
                                     //Pygmalion run again
@@ -1943,7 +1996,7 @@
                     is_send_press = true;
                     Generate('regenerate');
                 }
-            });			
+            });							
             $( "#option_delete_mes" ).click(function() {
                 if(this_chid != undefined && !is_send_press){
                     $('#dialogue_del_mes').css('display','block');
@@ -2068,10 +2121,27 @@
                 //$("#range_block").css('opacity',1.0);
                 saveSettings();
             });
+            $( "#settings_perset_openai" ).change(function() {
+                preset_settings_openai = $('#settings_perset_openai').find(":selected").text();
+
+                temp_openai = openai_settings[openai_setting_names[preset_settings_openai]].temperature;
+                freq_pen_openai = openai_settings[openai_setting_names[preset_settings_openai]].frequency_penalty;
+                pres_pen_openai = openai_settings[openai_setting_names[preset_settings_openai]].presence_penalty;
+
+                $('#temp_openai').val(temp_openai);
+                $('#temp_counter_openai').html(temp_openai);
+                $('#freq_pen_openai').val(freq_pen_openai);
+                $('#freq_pen_counter_openai').html(freq_pen_openai);
+                $('#pres_pen_openai').val(pres_pen_openai);
+                $('#pres_pen_counter_openai').html(pres_pen_openai);
+
+                saveSettings();
+            });			
             $( "#main_api" ).change(function() {
                 is_pygmalion = false;
                 is_get_status = false;
                 is_get_status_novel = false;
+                is_get_status_openai = false;
                 online_status = 'no_connection';
                 checkOnlineStatus();
                 changeMainAPI();
@@ -2081,6 +2151,7 @@
                 if($('#main_api').find(":selected").val() == 'kobold'){
                     $('#kobold_api').css("display", "block");
                     $('#novel_api').css("display", "none");
+                    $('#openai_api').css("display","none");
                     main_api = 'kobold';
                     $('#max_context_block').css('display', 'block');
                     $('#amount_gen_block').css('display', 'block');
@@ -2088,7 +2159,16 @@
                 if($('#main_api').find(":selected").val() == 'novel'){
                     $('#kobold_api').css("display", "none");
                     $('#novel_api').css("display", "block");
+                    $('#openai_api').css("display","none");
                     main_api = 'novel';
+                    $('#max_context_block').css('display', 'none');
+                    $('#amount_gen_block').css('display', 'none');
+                }
+                if($('#main_api').find(":selected").val() == 'openai'){
+                    $('#kobold_api').css("display", "none");
+                    $('#novel_api').css("display", "none");
+                    $('#openai_api').css("display","block");
+                    main_api = 'openai';
                     $('#max_context_block').css('display', 'none');
                     $('#amount_gen_block').css('display', 'none');
                 }
@@ -2188,6 +2268,37 @@
                 $('#rep_pen_size_counter_novel').html( $(this).val()+" Tokens");
                 var repPenSizeTimer_novel = setTimeout(saveSettings, 500);
             });
+			
+            //OpenAi
+            $(document).on('input', '#temp_openai', function() {
+                temp_openai = $(this).val();
+
+                if(isInt(temp_openai)){
+                    $('#temp_counter_openai').html( $(this).val()+".00" );
+                }else{
+                    $('#temp_counter_openai').html( $(this).val() );
+                }
+                var tempTimer_openai = setTimeout(saveSettings, 500);
+            });
+            $(document).on('input', '#freq_pen_openai', function() {
+                freq_pen_openai = $(this).val();
+                if(isInt(freq_pen_openai)){
+                    $('#freq_pen_counter_openai').html( $(this).val()+".00" );
+                }else{
+                    $('#freq_pen_counter_openai').html( $(this).val() );
+                }
+                var freqPenTimer_openai = setTimeout(saveSettings, 500);
+            });
+            $(document).on('input', '#pres_pen_openai', function() {
+                pres_pen_openai = $(this).val();
+                if(isInt(pres_pen_openai)){
+                    $('#pres_pen_counter_openai').html( $(this).val()+".00" );
+                }else{
+                    $('#pres_pen_counter_openai').html( $(this).val() );
+                }
+                var presPenTimer_openai = setTimeout(saveSettings, 500);
+            });			
+			
             //***************SETTINGS****************//
             ///////////////////////////////////////////
             async function getSettings(type){//timer
@@ -2247,6 +2358,30 @@
 
                             preset_settings_novel = settings.preset_settings_novel;
                             $("#settings_perset_novel option[value="+novelai_setting_names[preset_settings_novel]+"]").attr('selected', 'true');
+							
+                            //OpenAI
+                            if(settings.api_key_openai != undefined){
+                                api_key_openai = settings.api_key_openai;
+                                $("#api_key_openai").val(api_key_openai);
+                            }
+                            openai_setting_names = data.openai_setting_names;
+                            openai_settings = data.openai_settings;
+                            openai_settings.forEach(function(item, i, arr) {
+                                openai_settings[i] = JSON.parse(item);
+                            });
+                            var arr_holder = {};
+                            $("#settings_perset_openai").empty();
+                            openai_setting_names.forEach(function(item, i, arr) {
+                                arr_holder[item] = i;
+                                $('#settings_perset_openai').append('<option value='+i+'>'+item+'</option>');
+
+                            });
+                            openai_setting_names = {};
+                            openai_setting_names = arr_holder;
+
+                            preset_settings_openai = settings.preset_settings_openai;
+                            $("#settings_perset_openai option[value="+openai_setting_names[preset_settings_openai]+"]").attr('selected', 'true');
+							
                             //Kobold
                             koboldai_setting_names = data.koboldai_setting_names;
                             koboldai_settings = data.koboldai_settings;
@@ -2317,6 +2452,27 @@
                             $('#rep_pen_size_novel').val(rep_pen_size_novel);
                             $('#rep_pen_size_counter_novel').html(rep_pen_size_novel+" Tokens");
                             
+                            //OpenAI
+                            temp_openai = settings.temp_openai;
+                            freq_pen_openai = settings.freq_pen_openai;
+                            pres_pen_openai = settings.pres_pen_openai;
+                            
+                            addZeros = "";
+                            if(isInt(temp_openai)) addZeros = ".00";
+                            $('#temp_openai').val(temp_openai);
+                            $('#temp_counter_openai').html(temp_openai+addZeros);
+                                             
+                            addZeros = "";
+                            if(isInt(freq_pen_openai)) addZeros = ".00";
+                            $('#freq_pen_openai').val(freq_pen_openai);
+                            $('#freq_pen_counter_openai').html(freq_pen_openai+addZeros);
+
+                            addZeros = "";
+                            if(isInt(pres_pen_openai)) addZeros = ".00";
+                            $('#pres_pen_openai').val(pres_pen_openai);
+                            $('#pres_pen_counter_openai').html(pres_pen_openai+addZeros);
+                            							
+							
                             //////////////////////
                             if(preset_settings == 'gui'){
                                 $("#settings_perset option[value=gui]").attr('selected', 'true');
@@ -2374,6 +2530,7 @@
                             api_server: api_server,
                             preset_settings: preset_settings,
                             preset_settings_novel: preset_settings_novel,
+                            preset_settings_openai: preset_settings_openai,
                             user_avatar: user_avatar,
                             temp: temp,
                             amount_gen: amount_gen,
@@ -2383,12 +2540,16 @@
                             character_anchor: character_anchor,
                             main_api: main_api,
                             api_key_novel: api_key_novel,
+                            api_key_openai: api_key_openai,
                             rep_pen: rep_pen,
                             rep_pen_size: rep_pen_size,
                             model_novel: model_novel,
                             temp_novel: temp_novel,
                             rep_pen_novel: rep_pen_novel,
-                            rep_pen_size_novel: rep_pen_size_novel
+                            rep_pen_size_novel: rep_pen_size_novel,
+                            temp_openai: temp_openai,
+                            freq_pen_openai: freq_pen_openai,
+                            pres_pen_openai: pres_pen_openai
                         }),
                     beforeSend: function(){
 
@@ -2640,7 +2801,7 @@
                         }
                     });
                 }else{
-                    if(is_get_status != true){
+                    if(!is_get_status && !is_get_status_openai){
                         online_status = 'no_connection';
                     }
                 }
@@ -2699,6 +2860,93 @@
 
                 return 0;
             }
+
+            //************************************************************
+            //************************OPENAI****************************
+            //************************************************************
+            async function getStatusOpen(){
+                if(is_get_status_openai){
+                    var data = {key:api_key_openai};
+
+                    jQuery.ajax({    
+                        type: 'POST', // 
+                        url: '/getstatus_openai', // 
+                        data: JSON.stringify(data),
+                        beforeSend: function(){
+                            //$('#create_button').attr('value','Creating...'); 
+                        },
+                        cache: false,
+                        dataType: "json",
+                        contentType: "application/json",
+                        success: function(data){
+                            if (!('error' in data)) online_status = '<font color = "green" style = "margin-left : 20px">Valid</font>';
+                            resultCheckStatusOpen();
+                        },
+                        error: function (jqXHR, exception) {
+                            online_status = 'no_connection';
+                            console.log(exception);
+                            console.log(jqXHR);
+                            resultCheckStatusOpen();
+                        }
+                    });
+                }else{
+                    if(!is_get_status && !is_get_status_novel){
+                        online_status = '<font color = "no_connection';
+                    }
+                }
+            }
+            $( "#api_button_openai" ).click(function() {
+                if($('#api_key_openai').val() != ''){
+                    $("#api_loading_openai").css("display", 'inline-block');
+                    $("#api_button_openai").css("display", 'none');
+                    api_key_openai = $('#api_key_openai').val();
+                    api_key_openai = $.trim(api_key_openai);
+                    //console.log("1: "+api_server);
+                    saveSettings();
+                    is_get_status_openai = true;
+                    is_api_button_press_openai = true;
+                    getStatusOpen();
+                }
+            });
+            function resultCheckStatusOpen(){
+                is_api_button_press_openai = false;  
+                checkOnlineStatus();
+                $("#api_loading_openai").css("display", 'none');
+                $("#api_button_openai").css("display", 'inline-block');
+            }
+            $( "#anchor_order" ).change(function() {
+                anchor_order = parseInt($('#anchor_order').find(":selected").val());
+                saveSettings();
+            });
+            
+            
+            function compareVersions(v1, v2) {
+                const v1parts = v1.split('.');
+                const v2parts = v2.split('.');
+
+                for (let i = 0; i < v1parts.length; ++i) {
+                    if (v2parts.length === i) {
+                        return 1;
+                    }
+
+                    if (v1parts[i] === v2parts[i]) {
+                        continue;
+                    }
+                    if (v1parts[i] > v2parts[i]) {
+                        return 1;
+                    }
+                    else {
+                        return -1;
+                    }
+                }
+
+                if (v1parts.length != v2parts.length) {
+                    return -1;
+                }
+
+                return 0;
+            }
+            
             
             
             
@@ -2834,7 +3082,7 @@
     <div id="bg2">
         <a class="opt" id="option_regenerate" accesskey="r"><img src="img/regenerate.png" height="25px" width="25px" id="regenerate" style = "margin-top: 10px; margin-left: 10px; cursor: pointer; opacity: 0.6" >
 		<a class="opt" id="option_delete_mes" accesskey="s"><img src="img/del_mes.png" height="25px" width="25px" id="delete_mes" style = "cursor: pointer; opacity: 0.6">
-        </a>
+		</a>
 	</div>
 	
     <div id="shadow_popup">
@@ -2978,6 +3226,7 @@
             <select id="main_api">
                 <option value="kobold">KoboldAI</option>
                 <option value="novel">NovelAI</option>
+                <option value="openai">OpenAI</option>
             </select>
             <div id="kobold_api" style="position: relative;">
                 <div style="display:none; position: absolute; right:188px; top:-34px; opacity:0.20;"><a href="https://github.com/KoboldAI/KoboldAI-Client" target="_blank"><img src="img/kobold.png" style="width:40px;height:40px;"></a></div>
@@ -3038,6 +3287,29 @@
                     <input type="range" id="rep_pen_size_novel" name="volume" min="0" max="2048" step="1">
                 </div>
             </div>
+            <div id="openai_api" style="display: none;position: relative;">
+                <form  action="javascript:void(null);" method="post" enctype="multipart/form-data">
+                    <h4>API key </h4>
+                    <input id="api_key_openai" name="api_key_openai" class="text_pole" maxlength="500" size="35" value="" autocomplete="off">
+                    <input id="api_button_openai" type="submit" value="Connect">
+                    <img id="api_loading_openai" src="img/load.svg" >
+                </form>
+                <div id="online_status4">
+                    <div id="online_status_indicator4"></div><div id="online_status_text4">No connection...</div>
+                </div>
+                <h4>Preset settings</h4><h5>Selecting settings</h5>
+                <select id="settings_perset_openai" class="option_select_right_menu">
+                    <option value="gui">Default</option>
+                </select>
+                <div id="range_block_openai">
+                    <h4>Temperature </h4><h5 id="temp_counter_openai">select</h5>
+                    <input type="range" id="temp_openai" name="volume" min="0" max="2.0" step="0.01">
+                    <h4>Frequency Penalty </h4><h5 id="freq_pen_counter_openai">select</h5>
+                    <input type="range" id="freq_pen_openai" name="volume" min="-2" max="2" step="0.01">
+                    <h4>Presence Penalty</h4><h5 id="pres_pen_counter_openai">select</h5>
+                    <input type="range" id="pres_pen_openai" name="volume" min="-2" max="2" step="0.01">
+                </div>
+            </div>			
             <hr style="margin-bottom: 5px;">
             
             <h4>Your Avatar</h4><h5></h5>
