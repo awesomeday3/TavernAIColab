@@ -18,13 +18,15 @@ const path = require('path');
 
 const cookieParser = require('cookie-parser');
 const crypto = require('crypto');
+const ipaddr = require('ipaddr.js');
 
-
-const config = require('./config.conf');
+const config = require(path.join(process.cwd(), './config.conf'));
 const server_port = config.port;
 const whitelist = config.whitelist;
 const whitelistMode = config.whitelistMode;
 const autorun = config.autorun;
+
+
 
 var Client = require('node-rest-client').Client;
 var client = new Client();
@@ -33,10 +35,12 @@ var api_server = "";//"http://127.0.0.1:5000";
 //var server_port = 8000;
 
 var api_novelai = "https://api.novelai.net";
+var api_openai = "https://api.openai.com/v1";
 
 var response_get_story;
 var response_generate;
 var response_generate_novel;
+var response_generate_openai;
 var request_promt;
 var response_promt;
 var characters = {};
@@ -46,17 +50,17 @@ var response_edit;
 var response_dw_bg;
 var response_getstatus;
 var response_getstatus_novel;
+var response_getstatus_openai;
 var response_getlastversion;
 var api_key_novel;
+var api_key_openai;
 
 var is_colab = true;
 var charactersPath = 'public/characters/';
 var chatsPath = 'public/chats/';
-var settingsPath = 'public/settings.json';
 if (is_colab && process.env.googledrive == 2){
     charactersPath = '/content/drive/MyDrive/TavernAI/characters/';
     chatsPath = '/content/drive/MyDrive/TavernAI/chats/';
-    settingsPath = '/content/drive/MyDrive/TavernAI/settings.json';
 }
 const jsonParser = express.json({limit: '100mb'});
 const urlencodedParser = express.urlencoded({extended: true, limit: '100mb'});
@@ -98,7 +102,18 @@ const CORS = cors({
 app.use(CORS);
 
 app.use(function (req, res, next) { //Security
-    const clientIp = req.connection.remoteAddress.split(':').pop();
+    let clientIp = req.connection.remoteAddress;
+    let ip = ipaddr.parse(clientIp);
+    // Check if the IP address is IPv4-mapped IPv6 address
+    if (ip.kind() === 'ipv6' && ip.isIPv4MappedAddress()) {
+      const ipv4 = ip.toIPv4Address().toString();
+      clientIp = ipv4;
+    } else {
+      clientIp = ip;
+      clientIp = clientIp.toString();
+    }
+    
+     //clientIp = req.connection.remoteAddress.split(':').pop();
     if (whitelistMode === true && !whitelist.includes(clientIp)) {
         console.log('Forbidden: Connection attempt from '+ clientIp+'. If you are attempting to connect, please add your IP address in whitelist or disable whitelist mode in config.conf in root of TavernAI folder.\n');
         return res.status(403).send('<b>Forbidden</b>: Connection attempt from <b>'+ clientIp+'</b>. If you are attempting to connect, please add your IP address in whitelist or disable whitelist mode in config.conf in root of TavernAI folder.');
@@ -128,7 +143,7 @@ app.use(express.static(__dirname + "/public", { refresh: true }));
 
 
 app.use('/backgrounds', (req, res) => {
-  const filePath = path.join(process.cwd(), 'public/backgrounds', req.url);
+  const filePath = decodeURIComponent(path.join(process.cwd(), 'public/backgrounds', req.url.replace(/%20/g, ' ')));
   fs.readFile(filePath, (err, data) => {
     if (err) {
       res.status(404).send('File not found');
@@ -139,7 +154,7 @@ app.use('/backgrounds', (req, res) => {
   });
 });
 app.use('/characters', (req, res) => {
-  const filePath = path.join(process.cwd(), charactersPath, req.url);
+  const filePath = decodeURIComponent(path.join(process.cwd(), charactersPath, req.url.replace(/%20/g, ' ')));
   fs.readFile(filePath, (err, data) => {
     if (err) {
       res.status(404).send('File not found');
@@ -479,7 +494,7 @@ async function charaWrite(img_url, data, target_img, response = undefined, mes =
     try {
         // Load the image in any format
         sharp.cache(false);
-        var image = await sharp(img_url).resize(400, 400).toFormat('png').toBuffer();// old 170 234
+        var image = await sharp(img_url).resize(400, 600).toFormat('png').toBuffer();// old 170 234
         // Convert the image to PNG format
         //const pngImage = image.toFormat('png');
 
@@ -655,7 +670,7 @@ app.post("/downloadbackground", urlencodedParser, function(request, response){
 app.post("/savesettings", jsonParser, function(request, response){
 
 
-    fs.writeFile(settingsPath, JSON.stringify(request.body), 'utf8', function(err) {
+    fs.writeFile('public/settings.json', JSON.stringify(request.body), 'utf8', function(err) {
         if(err) {
             response.send(err);
             return console.log(err);
@@ -672,7 +687,9 @@ app.post('/getsettings', jsonParser, (request, response) => { //Wintermute's cod
     const koboldai_setting_names = [];
     const novelai_settings = [];
     const novelai_setting_names = [];
-    const settings = fs.readFileSync(settingsPath, 'utf8',  (err, data) => {
+    const openai_settings = [];
+    const openai_setting_names = [];
+    const settings = fs.readFileSync('public/settings.json', 'utf8',  (err, data) => {
     if (err) return response.sendStatus(500);
 
         return data;
@@ -724,12 +741,39 @@ app.post('/getsettings', jsonParser, (request, response) => { //Wintermute's cod
         novelai_setting_names.push(item.replace(/\.[^/.]+$/, ''));
     });
     
+    //OpenAI
+      const files3 = fs
+      .readdirSync('public/OpenAI Settings')
+      .sort(
+        (a, b) =>
+          new Date(fs.statSync(`public/OpenAI Settings/${b}`).mtime) -
+          new Date(fs.statSync(`public/OpenAI Settings/${a}`).mtime)
+      );
+      
+      files3.forEach(item => {
+      const file3 = fs.readFileSync(
+          `public/OpenAI Settings/${item}`,
+          'utf8',
+          (err, data) => {
+              if (err) return response.sendStatus(500);
+  
+              return data;
+          }
+      );
+  
+          openai_settings.push(file3);
+          openai_setting_names.push(item.replace(/\.[^/.]+$/, ''));
+      });
+    
+      
     response.send({
         settings,
         koboldai_settings,
         koboldai_setting_names,
         novelai_settings,
-        novelai_setting_names
+        novelai_setting_names,
+        openai_settings,
+        openai_setting_names
     });
 });
 
@@ -929,6 +973,84 @@ app.post("/getallchatsofchatacter", jsonParser, function(request, response){
     });
     
 });
+
+//***********Open.ai API 
+
+app.post("/getstatus_openai", jsonParser, function(request, response_getstatus_openai = response){
+    if(!request.body) return response_getstatus_openai.sendStatus(400);
+    api_key_openai = request.body.key;
+    var args = {
+        headers: { "Authorization": "Bearer "+api_key_openai}
+    };
+    client.get(api_openai+"/models",args, function (data, response) {
+        if(response.statusCode == 200){
+            console.log(data);
+            response_getstatus_openai.send(data);//data);
+        }
+        if(response.statusCode == 401){
+            console.log('Access Token is incorrect.');
+            response_getstatus_openai.send({error: true});
+        }
+        if(response.statusCode == 500 || response.statusCode == 501 || response.statusCode == 501 || response.statusCode == 503 || response.statusCode == 507){
+            console.log(data);
+            response_getstatus_openai.send({error: true});
+        }
+    }).on('error', function (err) {
+        //console.log('');
+	//console.log('something went wrong on the request', err.request.options);
+        response_getstatus_openai.send({error: true});
+    });
+});
+
+
+
+app.post("/generate_openai", jsonParser, function(request, response_generate_openai = response){
+    if(!request.body) return response_generate_openai.sendStatus(400);
+
+    console.log(request.body);
+    var data = {
+        "prompt": request.body.prompt,
+        "model": request.body.model,
+        "temperature": request.body.temperature,
+        "max_tokens": request.body.max_tokens,
+        "presence_penalty": request.body.presence_penalty,
+        "frequency_penalty": request.body.frequency_penalty
+    };
+                        
+    var args = {
+        data: data,
+        
+        headers: { "Content-Type": "application/json",  "Authorization": "Bearer "+api_key_openai}
+    };
+    client.post(api_openai+"/completions",args, function (data, response) {
+        console.log(data);
+        if(response.statusCode <= 299){
+            console.log(data);
+            response_generate_openai.send(data);
+        }
+        if(response.statusCode == 400){
+            console.log('Validation error');
+            response_generate_openai.send({error: true});
+        }
+        if(response.statusCode == 401){
+            console.log('Access Token is incorrect');
+            response_generate_openai.send({error: true});
+        }
+        if(response.statusCode == 402){
+            console.log('An active subscription is required to access this endpoint');
+            response_generate_openai.send({error: true});
+        }
+        if(response.statusCode == 500 || response.statusCode == 409){
+            console.log(data);
+            response_generate_openai.send({error: true});
+        }
+    }).on('error', function (err) {
+        //console.log('');
+	//console.log('something went wrong on the request', err.request.options);
+        response_getstatus.send({error: true});
+    });
+});
+
 function getPngName(file){
     let i = 1;
     let base_name = file;
