@@ -539,6 +539,7 @@ function charaRead(img_url){
         //console.log(text.decode(chunk.data));
       return PNGtext.decode(chunk.data);
     });
+    console.log(img_url);
     var base64DecodedData = Buffer.from(textChunks[0].text, 'base64').toString('utf8');
     return base64DecodedData;//textChunks[0].text;
     //console.log(textChunks[0].keyword); // 'hello'
@@ -1009,8 +1010,8 @@ app.post("/generate_openai", jsonParser, function(request, response_generate_ope
 
     console.log(request.body);
     var data = {
-        "prompt": request.body.prompt,
-        "model": request.body.model,
+        "messages": request.body.messages,
+        "model": request.body.model, // TODO REPLACED HERE
         "temperature": request.body.temperature,
         "max_tokens": request.body.max_tokens,
         "presence_penalty": request.body.presence_penalty,
@@ -1022,7 +1023,7 @@ app.post("/generate_openai", jsonParser, function(request, response_generate_ope
         
         headers: { "Content-Type": "application/json",  "Authorization": "Bearer "+api_key_openai}
     };
-    client.post(api_openai+"/completions",args, function (data, response) {
+    client.post(api_openai+"/chat/completions",args, function (data, response) {
         console.log(data);
         if(response.statusCode <= 299){
             console.log(data);
