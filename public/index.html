@@ -892,9 +892,12 @@
                             chat[j]['mes'] = chat[j]['mes'].replace(/<BOT>/gi, name2);
                         }
                         let this_mes_ch_name = '';
-                        if(chat[j]['is_user']){
-                            chat2_openai[i] = {"role": "user", "content": chat[j]['mes']};
-                            this_mes_ch_name = name1;
+                        if(chat[j]['is_user']){ 
+						if(character_anchor)
+						chat2_openai[i] = {"role": "user", "content": name1 + ": " +chat[j]['mes']};
+						else
+						chat2_openai[i] = {"role": "user", "content": chat[j]['mes']}; 
+						this_mes_ch_name = name1;
                         }else{
                             chat2_openai[i] = {"role": "assistant", "content": chat[j]['mes']};
                             this_mes_ch_name = name2;
