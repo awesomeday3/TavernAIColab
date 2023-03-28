@@ -24,10 +24,10 @@ body {
     -webkit-tap-highlight-color: transparent;
 }
 .mes_text i {
-    color: #e5e0d8;
+    color: grey !important;
 }
 .mes_text em {
-    color: #e5e0d8;
+    color: grey !important;
 }
 .mes_text p {
     margin-top: 0px;
@@ -35,7 +35,7 @@ body {
 }
 .mes_text strong {
     font-weight: bold;
-    color: #e5e0d8;
+    color: grey !important;
 }
 .mes_text h2 {
     font-weight: bold;
