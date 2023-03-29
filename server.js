@@ -598,7 +598,7 @@ app.post("/getcharacters", jsonParser, function(request, response){
 app.post("/getbackgrounds", jsonParser, function(request, response){
     var images = getImages("public/backgrounds");
     if(is_colab === true){
-        images = ['tavern.png', '1.png', '2.png', '3.png', '4.png'];
+        images = ['1.png', '2.png', '3.png', '4.png'];
     }
     response.send(JSON.stringify(images));
     
