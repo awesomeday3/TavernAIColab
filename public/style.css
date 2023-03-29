@@ -806,6 +806,7 @@ input {
 }
 
 #add_avatar_button{
+    color: rgb(229, 224, 216);
     vertical-align: top;
     display: inline-block;
     margin-top: 52px;
@@ -1584,11 +1585,13 @@ label.checkbox :checked + span:after {
 }
 
 .select_chat_block_filename{
+    color: rgb(229, 224, 216);
     opacity:0.5;
 }
 .select_chat_block_mes{
     margin-right: 6px;
 	font-size:0.75rem;
+	color: rgb(229, 224, 216);
 }
 
 .select_chat_block .avatar {
@@ -2107,8 +2110,8 @@ body {
     left: 0%;
     top: 50%;
     margin-top: -2%;
-    border-bottom: 1px solid #d1d5db;
-    border-left: 1px solid #d1d5db;
+    border-bottom: 1px solid #191919;
+    border-left: 1px solid #191919;
     transform: translateX(25%) rotate(45deg);
 }
   
@@ -2117,8 +2120,8 @@ body {
     right: 2%;
     top: 50%;
     margin-top: -2%;
-    border-right: 1px solid #d1d5db;
-    border-top: 1px solid #d1d5db;
+    border-right: 1px solid #191919;
+    border-top: 1px solid #191919;
     transform: translateX(-25%) rotate(45deg);
 }
   
