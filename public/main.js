@@ -592,7 +592,7 @@ async function setBackground(bg) {
         //processData: false, 
         success: function (html) {
             //setBackground(html);
-            //$('body').css('background-image', 'linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0)), url('+e.target.result+')');
+            //$('body').css('background-image', 'linear-gradient(rgba(19,21,44,0.75), rgba(19,21,44,0.75)), url('+e.target.result+')');
             //$("#form_bg_download").after("<div class=bg_example><img bgfile='"+html+"' class=bg_example_img src='backgrounds/"+html+"'><img bgfile='"+html+"' class=bg_example_cross src=img/cross.png></div>");
         },
         error: function (jqXHR, exception) {
@@ -1683,7 +1683,7 @@ $(document).on('click', '.bg_example_img', function () {
             $("#options").css('display', 'none');
         }
     });
-    $('#bg' + number_bg).css('background-image', 'linear-gradient(rgba(19,21,44,0.75), rgba(19,21,44,0.75)), url("backgrounds/' + this_bgfile + '")');
+    $('#bg' + number_bg).css('background-image', 'linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0)), url("backgrounds/' + this_bgfile + '")');
     setBackground(this_bgfile);
 
 });
