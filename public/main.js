@@ -174,7 +174,7 @@ const MEMORY_PROMPT_PREFIX = "Remember"
 var memory_prompt = ""
 
 const AUTHORS_NOTE_INSTER_ORDER = 0; // 0 is last.
-const formatAuthorsNote = (note) => `[${note}]`; // `[Author's Note: ${note}]`;
+const formatAuthorsNote = (note) => `${note}`;
 var authors_note = "";
 
 //css
@@ -686,7 +686,7 @@ function addOneMessage(mes) {
     }
     messageText = messageFormating(messageText, characterName);
 
-// Only show the swipe arrows for the last message if it comes from the bot and it's not the greeting
+    // Only show the swipe arrows for the last message if it comes from the bot and it's not the greeting
     let is_last_msg = chat.length > 1 && (count_view_mes == chat.length - 1) && !mes['is_user'];
     // Make a new swipes array with the current message being the first swipe
     if (is_last_msg) {
@@ -715,7 +715,7 @@ function addOneMessage(mes) {
         <div class="arrow right_arrow" style="visibility: ${right_display};"></div>
     </div>
 </div>`);
-    
+
     if (!if_typing_text) {
         //console.log(messageText);
         $("#chat").children().filter('[mesid="' + count_view_mes + '"]').children('.mes_block').children('.mes_text').append(messageText);
@@ -779,11 +779,11 @@ async function Generate(type) {
                 openai_msgs.pop();
             }
         }
-        
+		
         else {
             var textareaText = $("#send_textarea").val();
             $("#send_textarea").val('');
-        }	
+        }		
         //$("#send_textarea").attr("disabled","disabled");
 
         //$("#send_textarea").blur();
@@ -1020,7 +1020,6 @@ async function Generate(type) {
                     // TODO: instead of role user content use role system name example_user
                     // message from the user so the model doesn't confuse the context (maybe, I just think that this should be done)
                     if (example_block.length != 0) {
-                        tryInsertAuthorsNote(examples_tosend);
                         examples_tosend.push(new_chat_msg);
                     }
                     for (let k = 0; k < example_block.length; k++) {
@@ -1086,7 +1085,6 @@ async function Generate(type) {
                         // add all the messages from the example
                         if ((total_count + example_count + start_chat_count) < (this_max_context - this_max_tokens)) {
                             if (k == 0) {
-                                tryInsertAuthorsNote(examples_tosend);
                                 examples_tosend.push(new_chat_msg);
                                 total_count += start_chat_count;
                             }
@@ -1237,13 +1235,13 @@ async function Generate(type) {
                         if (type === 'force_name2') this_mes_is_name = true;
                         //getMessage = getMessage.replace(/^\s+/g, '');
                         if (getMessage.length > 0) {
-                            				getMessage = $.trim(getMessage);
+							getMessage = $.trim(getMessage);
                             chat[chat.length] = {};
                             chat[chat.length - 1]['name'] = name2;
                             chat[chat.length - 1]['is_user'] = false;
                             chat[chat.length - 1]['is_name'] = this_mes_is_name;
                             chat[chat.length - 1]['send_date'] = Date.now();
-           							chat[chat.length - 1]['mes'] = getMessage;
+							chat[chat.length - 1]['mes'] = getMessage;
                             if (is_swipe) {
                                 console.log(getMessage);
                                 $("#chat").children().filter('[mesid="' + (count_view_mes - 1) + '"]').children('.mes_block').children('.mes_text').text(getMessage);
@@ -2225,7 +2223,7 @@ $("#dialogue_del_mes_ok").click(function () {
         var $textchat = $('#chat');
         $textchat.scrollTop($textchat[0].scrollHeight);
     }
-    // Change visibility since some messages got deleted
+	// Change visibility since some messages got deleted
     swipeSetArrowVisibility();
     this_del_mes = 0;
 
@@ -3278,7 +3276,7 @@ async function getStatusOpen() {
             dataType: "json",
             contentType: "application/json",
             success: function (data) {
-                if (!('error' in data)) online_status = 'Valid';
+                if (!('error' in data)) online_status = '<font color = "green" style = "margin-left : 20px">Valid</font>';
                 resultCheckStatusOpen();
             },
             error: function (jqXHR, exception) {
