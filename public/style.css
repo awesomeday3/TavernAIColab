@@ -8,7 +8,6 @@
 
 body {
     margin: 0;
-   
     background-color: rgb(36, 37, 37);
     background-size: auto 100%;
     background-repeat: no-repeat;
@@ -53,7 +52,7 @@ code {
   word-wrap: break-word;
 }
 
-/* 
+/*
 #bg1{
     //background-image: linear-gradient(rgba(19,21,44,0.75), rgba(19,21,44,0.75)), url(backgrounds/tavern.png);
     background: url(backgrounds/tavern.png);
@@ -61,19 +60,19 @@ code {
     background-repeat: no-repeat;
     background-attachment: fixed;
     background-size: cover;
-    filter: blur(2px);
+    filter: none;
     position: absolute;
     width: 100%;
     height: 100%;
     z-index: -2;
-}
+}*/
 #bg2{
    //background: linear-gradient(rgba(19,21,44,0.75), rgba(19,21,44,0.75)), url(backgrounds/tavern.png);
 	background: url(backgrounds/tavern.png);
     background-size: auto 100%;
     background-repeat: no-repeat;
     background-attachment: fixed;
-    filter: blur(2px);
+    filter: none;
     background-size: cover;
     -webkit-backdrop-filter: blur(2px);
     backdrop-filter: blur(2px);
@@ -83,7 +82,7 @@ code {
     height: 100%;
     z-index: -1;
 } 
-*/
+
 
 #sheld {
     display: grid;
@@ -663,7 +662,7 @@ input {
     
 }
 
-#bg2 {
+#bg3 {
 	width:100vw;
 	display: inline-block;
 	height:50px;
