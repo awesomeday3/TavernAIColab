@@ -975,6 +975,7 @@ input {
     cursor: pointer;
     transition: background-color 0.2s;
 }
+
 #dialogue_popup_cancel:hover{
     background-color: #444444;
 }
@@ -1436,6 +1437,7 @@ label.checkbox :checked + span:after {
     margin-top: 0px;
     margin-bottom: 0px;
     margin-left: 0px;
+    color: #cacaca;
 }
 #character_popup h5{
     margin-top: 0px;
@@ -1476,6 +1478,7 @@ label.checkbox :checked + span:after {
     height: 100%;
     margin-top: 0px;
     border-radius: 10px;
+    background-color: #28282877;
 }
 
 #character_popup_ok{
