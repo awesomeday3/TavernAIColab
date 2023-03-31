@@ -1450,6 +1450,7 @@ label.checkbox :checked + span:after {
     /* height: 65px; */
     margin-top: 0px;
     margin-left: 0px;
+    background-color: #282A2A;
 }
 #scenario_div{
     padding-top: 10px;
@@ -1462,6 +1463,7 @@ label.checkbox :checked + span:after {
 #scenario_pole{
     width: 92%;
     margin-left: 0px;
+    background-color: #282a2a;
 }
 #mes_example_textarea{
     margin-left: 36px;
