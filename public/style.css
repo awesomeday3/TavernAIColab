@@ -2092,38 +2092,10 @@ body {
     transition: width 0s ease;
 }
 
-.custom_textarea{
-    width: 92%;
-    height: 200px;
-    margin-bottom: 20px;
-}
-
-.left_arrow {
-    position: absolute;
-    left: 0%;
-    top: 50%;
-    margin-top: -2%;
-    border-bottom: 1px solid #d1d5db;
-    border-left: 1px solid #d1d5db;
-    transform: translateX(25%) rotate(45deg);
-}
-  
-.right_arrow {
-    position: absolute;
-    right: 2%;
-    top: 50%;
-    margin-top: -2%;
-    border-right: 1px solid #d1d5db;
-    border-top: 1px solid #d1d5db;
-    transform: translateX(-25%) rotate(45deg);
-}
-  
-.arrow {
-    /* Transparent background */
-    background-color: transparent;
-
-    /* Size */
-    height: 12px;
-    width: 12px;
-    cursor: pointer;
+.bg_character {
+  position: absolute;
+  top: 50px;
+  left: 50px;
+  width: 1000px;
+  height: 1000px;
 }
